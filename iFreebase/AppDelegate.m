@@ -35,6 +35,7 @@
 @property (strong) NSMutableArray *properties;
 @property (strong) NSMutableArray *objectIDs;
 @property (strong) NSMutableArray *objectNames;
+@property (strong) NSMutableArray *typeEntityIDs;
 @property NSInteger lastSelectedRow;
 @property (weak) IBOutlet NSPanel *sshToolsPanel;
 
@@ -51,6 +52,7 @@
 @synthesize properties;
 @synthesize objectIDs;
 @synthesize objectNames;
+@synthesize typeEntityIDs;
 @synthesize lastSelectedRow;
 
 // In the drawer
@@ -85,6 +87,14 @@
         case 2:
             numberOfRows = properties.count;
             break;
+        
+        case 3:
+            numberOfRows = objectIDs.count;
+            break;
+        
+        case 4:
+            numberOfRows = typeEntityIDs.count;
+            break;
             
         default:
             break;
@@ -113,6 +123,20 @@
         case 2:
             if ([tableColumn.identifier isEqualToString:@"col_1"]) {
                 [textField setStringValue:[properties objectAtIndex:row]];
+            }
+            break;
+        
+        case 3:
+            if ([tableColumn.identifier isEqualToString:@"col_1"]) {
+                [textField setStringValue:[objectIDs objectAtIndex:row]];
+            } else if ([tableColumn.identifier isEqualToString:@"col_2"]) {
+                [textField setStringValue:[objectNames objectAtIndex:row]];
+            }
+            break;
+        
+        case 4:
+            if ([tableColumn.identifier isEqualToString:@"col_1"]) {
+                [textField setStringValue:[typeEntityIDs objectAtIndex:row]];
             }
             break;
             
@@ -151,7 +175,8 @@
     [typeOfQuery addItemsWithTitles:@[@"1. Given a name, return all entities matching the name.",
                                       @"2. Given an entity ID, return all types it belongs to.",
                                       @"3. Given an entity ID, return all properties whose schema/expected_type is one type of the entity.",
-                                      @"4. Given an entity ID, return all objects that are co-occurred with this entity in one triple."]];
+                                      @"4. Given an entity ID, return all objects that are co-occurred with this entity in one triple.",
+                                      @"5. Given a type, return all entities having this type."]];
     [typeOfQuery selectItemAtIndex:0];
     
     // Set up the search field
@@ -164,6 +189,7 @@
     properties = [[NSMutableArray alloc] init];
     objectIDs = [[NSMutableArray alloc] init];
     objectNames = [[NSMutableArray alloc] init];
+    typeEntityIDs = [[NSMutableArray alloc] init];
     
     [queryResultTableView setDataSource:self];
     [queryResultTableView setDelegate:self];
@@ -285,6 +311,35 @@
                 [noResults setHidden:YES];
             }
             break;
+        
+        case 3:
+            [objectIDs removeAllObjects];
+            [objectNames removeAllObjects];
+            lines = [response componentsSeparatedByString:@"\n"];
+            for (int i = 1; i < lines.count - 1; i++) {
+                cols = [[lines objectAtIndex:i] componentsSeparatedByString:@"\t"];
+                [objectIDs addObject:[cols objectAtIndex:0]];
+                [objectNames addObject:[cols objectAtIndex:1]];
+            }
+            if (objectIDs.count == 0) {
+                [noResults setHidden:NO];
+            } else {
+                [noResults setHidden:YES];
+            }
+            break;
+        
+        case 4:
+            [typeEntityIDs removeAllObjects];
+            lines = [response componentsSeparatedByString:@"\n"];
+            for (int i = 1; i < lines.count - 1; i++) {
+                [typeEntityIDs addObject:[lines objectAtIndex:i]];
+            }
+            if (typeEntityIDs.count == 0) {
+                [noResults setHidden:NO];
+            } else {
+                [noResults setHidden:YES];
+            }
+            break;
             
         default:
             break;
@@ -303,9 +358,11 @@
         [alert runModal];
     } else {
         NSString *sqlCommand;
+        NSArray *keywords;
         switch (typeOfQuery.indexOfSelectedItem) {
             case 0:
-                sqlCommand = [NSString stringWithFormat:@"mysql -u fb -D freebase -e \"select id, name from idnamecount where match (name) against ('+%@' in boolean mode) order by count desc limit 20;\"", query.stringValue];
+                keywords = [query.stringValue componentsSeparatedByString:@" "];
+                sqlCommand = [NSString stringWithFormat:@"mysql -u fb -D freebase -e \"select id, name from idnamecount where match (name) against ('+%@' in boolean mode) order by count desc;\"", [keywords componentsJoinedByString:@" +"]];
                 break;
             
             case 1:
@@ -314,6 +371,15 @@
             
             case 2:
                 sqlCommand = [NSString stringWithFormat:@"mysql -u fb -D freebase -e \"select property from propertyschema, idtype where idtype.id = '%@' and propertyschema.the_schema = idtype.type union select property from propertyexpectedtype, idtype where idtype.id = '%@' and propertyexpectedtype.expected = idtype.type;\"", query.stringValue, query.stringValue];
+                break;
+            
+            case 3:
+                sqlCommand = [NSString stringWithFormat:@"mysql -u fb -D freebase -e \"select id2, name2 from idtoidandname where id1 = '%@' limit 300 union select id1, name1 from idtoidandname where id2 = '%@';\"", query.stringValue, query.stringValue];
+                break;
+            
+            case 4:
+                sqlCommand = [NSString stringWithFormat:@"mysql -u fb -D freebase -e \"select id from idtype where type = '<http://rdf.freebase.com/ns/%@>';\"", query.stringValue];
+                break;
                 
             default:
                 break;
@@ -321,6 +387,11 @@
         NSError *error = nil;
         NSString *response = [session.channel execute:sqlCommand error:&error];
         [self parseResponse:response];
+        if (typeOfQuery.indexOfSelectedItem == 0 && [noResults isHidden] == NO) {
+            sqlCommand = [NSString stringWithFormat:@"mysql -u fb -D freebase -e \"select id, name from idnamecount where name like '%%%@%%' order by count desc;\"", query.stringValue];
+            response = [session.channel execute:sqlCommand error:&error];
+            [self parseResponse:response];
+        }
         [queryResultTableView reloadData];
     }
 }
@@ -356,6 +427,26 @@
             [queryResultTableView reloadData];
             [noResults setHidden:YES];
             break;
+        
+        case 3:
+            [query.cell setPlaceholderString:@"Input an entity ID, and press Enter."];
+            [[[queryResultTableView tableColumnWithIdentifier:@"col_1"] headerCell] setStringValue:@"Entity ID"];
+            [[[queryResultTableView tableColumnWithIdentifier:@"col_2"] headerCell] setStringValue:@"Name"];
+            [[queryResultTableView tableColumnWithIdentifier:@"col_1"] setWidth:100];
+            [[queryResultTableView tableColumnWithIdentifier:@"col_2"] setWidth:482];
+            [queryResultTableView reloadData];
+            [noResults setHidden:YES];
+            break;
+        
+        case 4:
+            [query.cell setPlaceholderString:@"Input a type, and press Enter."];
+            [[[queryResultTableView tableColumnWithIdentifier:@"col_1"] headerCell] setStringValue:@"Entity ID"];
+            [[[queryResultTableView tableColumnWithIdentifier:@"col_2"] headerCell] setStringValue:@""];
+            [[queryResultTableView tableColumnWithIdentifier:@"col_1"] setWidth:450];
+            [[queryResultTableView tableColumnWithIdentifier:@"col_2"] setWidth:132];
+            [queryResultTableView reloadData];
+            [noResults setHidden:YES];
+            break;
             
         default:
             break;
@@ -369,6 +460,7 @@
     [properties removeAllObjects];
     [objectIDs removeAllObjects];
     [objectNames removeAllObjects];
+    [typeEntityIDs removeAllObjects];
     [queryResultTableView reloadData];
     [noResults setHidden:YES];
 }

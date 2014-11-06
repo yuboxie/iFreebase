@@ -683,7 +683,7 @@
         <window title="iFreebase" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="H1s-mM-J4l">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="163" y="205" width="550" height="500"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1028"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1050"/>
             <view key="contentView" id="8oH-5V-6r8">
                 <rect key="frame" x="0.0" y="0.0" width="550" height="500"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -831,14 +831,6 @@
                             <action selector="toggleDrawer:" target="Voe-Tx-rLC" id="8OL-R8-VgU"/>
                         </connections>
                     </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SjK-Y7-fgY">
-                        <rect key="frame" x="235" y="88" width="161" height="36"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="No Results" id="Zd1-cb-OSy">
-                            <font key="font" metaFont="system" size="19"/>
-                            <color key="textColor" name="gridColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M6S-eC-Un5">
                         <rect key="frame" x="18" y="461" width="170" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Choose one type of query:" id="zHc-VK-BfC">
@@ -857,18 +849,27 @@
                             <action selector="clearTableResult:" target="Voe-Tx-rLC" id="qF7-kG-acJ"/>
                         </connections>
                     </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SjK-Y7-fgY">
+                        <rect key="frame" x="195" y="259" width="161" height="36"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="No Results" id="Zd1-cb-OSy">
+                            <font key="font" metaFont="system" size="19"/>
+                            <color key="textColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="Ld8-AZ-MWL" secondAttribute="trailing" constant="20" id="9Sa-K5-evm"/>
                     <constraint firstAttribute="trailing" secondItem="1Qi-wJ-e6h" secondAttribute="trailing" constant="20" id="E7w-Yz-QBE"/>
-                    <constraint firstAttribute="trailing" secondItem="pAP-0n-KsP" secondAttribute="trailing" constant="20" id="Ex8-QY-6GA"/>
                     <constraint firstItem="pAP-0n-KsP" firstAttribute="leading" secondItem="8oH-5V-6r8" secondAttribute="leading" constant="20" id="LZR-8p-sR1"/>
+                    <constraint firstAttribute="centerX" secondItem="SjK-Y7-fgY" secondAttribute="centerX" id="Mzl-gp-a7x"/>
                     <constraint firstItem="M6S-eC-Un5" firstAttribute="leading" secondItem="8oH-5V-6r8" secondAttribute="leading" constant="20" id="NwA-d2-Bov"/>
                     <constraint firstAttribute="bottom" secondItem="stB-1x-Z90" secondAttribute="bottom" constant="20" id="XRr-xF-40f"/>
                     <constraint firstAttribute="trailing" secondItem="stB-1x-Z90" secondAttribute="trailing" constant="20" id="Ypp-yJ-ypQ"/>
                     <constraint firstItem="stB-1x-Z90" firstAttribute="top" secondItem="1Qi-wJ-e6h" secondAttribute="bottom" constant="7" id="dMd-Uh-D4b"/>
                     <constraint firstItem="stB-1x-Z90" firstAttribute="leading" secondItem="8oH-5V-6r8" secondAttribute="leading" constant="20" id="idu-X1-Szg"/>
                     <constraint firstItem="rH3-UC-d7a" firstAttribute="leading" secondItem="8oH-5V-6r8" secondAttribute="leading" constant="20" id="p4b-In-Vyx"/>
+                    <constraint firstAttribute="trailing" secondItem="pAP-0n-KsP" secondAttribute="trailing" constant="18" id="tQH-So-wE4"/>
                     <constraint firstItem="weg-gd-xjb" firstAttribute="leading" secondItem="8oH-5V-6r8" secondAttribute="leading" constant="20" id="wSC-Am-WeJ"/>
                     <constraint firstAttribute="trailing" secondItem="rH3-UC-d7a" secondAttribute="trailing" constant="20" id="yPU-rM-Ptd"/>
                 </constraints>
